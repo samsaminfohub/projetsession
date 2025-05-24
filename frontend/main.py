@@ -16,7 +16,7 @@ sulphates = st.slider("Sulphates", 0.3, 2.0)
 alcohol = st.slider("Alcohol", 8.0, 15.0)
 
 if st.button("Predict"):
-    response = requests.post("http://api:8000/predict", json={
+    response = requests.post("http://9.234.160.34:8000/predict", json={
         "fixed_acidity": fixed_acidity,
         "volatile_acidity": volatile_acidity,
         "citric_acid": citric_acid,
