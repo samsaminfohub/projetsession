@@ -1,0 +1,37 @@
+version: '3.8'  # Spécifie la version de Docker Compose
+
+services:
+  web:
+    build: ./frontend  # Construire l'image Docker pour le service web à partir du Dockerfile situé dans le dossier ./frontend
+    # image: local/streamlit  # Option pour utiliser une image locale nommée "streamlit" au lieu de construire
+    ports:
+      - "8502:8502"  # Mappe le port 8502 du conteneur au port 8502 de l'hôte
+    depends_on:
+      - api  # Le service web dépend du service API, donc l'API doit démarrer avant le service web
+    restart: always  # Redémarre toujours le conteneur en cas de panne
+
+  api:
+    build: ./backend  # Construire l'image Docker pour le service API à partir du Dockerfile situé dans le dossier ./backend
+    container_name: api_container  # Nom du conteneur pour le service API
+    ports:
+      - "8000:8000"  # Mappe le port 8000 du conteneur au port 8000 de l'hôte
+    depends_on:
+      - mlflow  # Le service API dépend du service MLflow, donc MLflow doit démarrer avant le service API
+    volumes:
+      - ./models:/models  # Monte le dossier local ./models dans le conteneur à /models pour partager les modèles entre les services
+    restart: always  # Redémarre toujours le conteneur en cas de panne
+
+  mlflow:
+    build: ./mlflow  # Construire l'image Docker pour le service MLflow à partir du Dockerfile situé dans le dossier ./mlflow
+    container_name: mlflow_container  # Nom du conteneur pour le service MLflow
+    ports:
+      - "5000:5000"  # Mappe le port 5000 du conteneur au port 5000 de l'hôte
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000  # Définit la variable d'environnement pour l'URI de suivi MLflow
+    volumes:
+      - ./mlruns:/mlflow  # Monte le dossier local ./mlruns dans le conteneur à /mlflow pour stocker les artefacts MLflow
+      - ./notebook:/notebook  # Monte le dossier local ./notebook dans le conteneur à /notebook pour les notebooks Jupyter
+      - ./data:/data:ro
+      - ./models:/models  # Monte le dossier local ./models dans le conteneur à /models pour partager les modèles entre les services
+    restart: always  # Redémarre toujours le conteneur en cas de panne
+
